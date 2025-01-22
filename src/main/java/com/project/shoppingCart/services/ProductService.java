@@ -22,7 +22,7 @@ public class ProductService {
 
     public Product findById(Long id) {
         Optional<Product> product = this.productRepository.findById(id);
-        return product.orElseThrow(() -> new EntityNotFoundException("Produto não encontrado;"));
+        return product.orElseThrow(() -> new EntityNotFoundException("Produto não encontrado!"));
     }
 
     public Product save(Product product) {

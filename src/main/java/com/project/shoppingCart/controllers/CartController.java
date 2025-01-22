@@ -1,6 +1,7 @@
 package com.project.shoppingCart.controllers;
 
 import com.project.shoppingCart.dtos.CartCreateDto;
+import com.project.shoppingCart.dtos.CartRemoveDto;
 import com.project.shoppingCart.models.Cart;
 import com.project.shoppingCart.models.CartItem;
 import com.project.shoppingCart.services.CartService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("cart")
@@ -44,6 +46,16 @@ public class CartController {
         cart.setDateRegistry(LocalDateTime.now());
         this.cartService.updateCart(cart);
         return new ResponseEntity<CartItem>(newCartItem, HttpStatus.OK);
+    }
+
+    @PostMapping(value= "/remove")
+    public ResponseEntity<Optional<CartItem>> removeCartItem(@RequestBody @Valid CartRemoveDto cartItemRem, HttpSession httpSession) {
+        Cart cart = this.cartService.findBySession(httpSession.getId());
+        if (cart == null) {
+            throw new RuntimeException("Cart not found");
+        }
+        cartItemRem.setCart_id(cart.getId());
+        return new ResponseEntity<Optional<CartItem>>(this.cartService.removeCartItem(cartItemRem), HttpStatus.OK);
     }
 
     @DeleteMapping(value="/{id}")

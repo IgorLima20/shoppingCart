@@ -1,15 +1,18 @@
 package com.project.shoppingCart.services;
 
 import com.project.shoppingCart.dtos.CartCreateDto;
+import com.project.shoppingCart.dtos.CartRemoveDto;
 import com.project.shoppingCart.models.Cart;
 import com.project.shoppingCart.models.CartItem;
 import com.project.shoppingCart.models.Product;
 import com.project.shoppingCart.repositories.CartItemRepository;
 import com.project.shoppingCart.repositories.CartRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CartService {
@@ -50,6 +53,19 @@ public class CartService {
         }
         CartItem cartItemNew = new CartItem(cartItem.getAmount(), product, cartItem.getCart());
         return this.cartItemRepository.save(cartItemNew);
+    }
+
+    public Optional<CartItem> removeCartItem(CartRemoveDto cartItemRem) {
+        CartItem cartItem = this.findByCartIdAndProductId(cartItemRem.getCart_id(), cartItemRem.getProduct_id());
+        if (cartItem == null) {
+            throw new EntityNotFoundException("Carrinho não localizado!");
+        }
+        if (cartItemRem.isDeleted() || cartItem.getAmount() <= 0) {
+            this.deleteCartItem(cartItemRem.getCart_id(), cartItemRem.getProduct_id());
+            return Optional.empty();
+        }
+        cartItem.setAmount(cartItem.getAmount() - cartItemRem.getAmount());
+        return Optional.of(this.cartItemRepository.save(cartItem));
     }
 
     public void deleteCartItem(Long idCart, Long idProduct) {
